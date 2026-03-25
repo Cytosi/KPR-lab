@@ -938,10 +938,11 @@ class DistilBertForMaskedLM(DistilBertPreTrainedModel):
     DISTILBERT_START_DOCSTRING,
 )
 class DistilBertForSequenceClassification(DistilBertPreTrainedModel):
-    def __init__(self, config: PretrainedConfig):
+    def __init__(self, config: PretrainedConfig, pooling_strategy: str = "cls"):
         super().__init__(config)
         self.num_labels = config.num_labels
         self.config = config
+        self.pooling_strategy = pooling_strategy  # "cls", "mean", "max"
 
         self.distilbert = DistilBertModel(config)
         self.pre_classifier = nn.Linear(config.dim, config.dim)
@@ -1004,7 +1005,29 @@ class DistilBertForSequenceClassification(DistilBertPreTrainedModel):
             return_dict=return_dict,
         )
         hidden_state = distilbert_output[0]  # (bs, seq_len, dim)
-        pooled_output = hidden_state[:, 0]  # (bs, dim)
+        
+        # 根据池化策略选择不同的表示向量
+        if self.pooling_strategy == "cls":
+            # CLS: 使用 [CLS] 标签的输出向量
+            pooled_output = hidden_state[:, 0]  # (bs, dim)
+        elif self.pooling_strategy == "mean":
+            # Mean Pooling: 对所有 token 的向量取平均（考虑 attention_mask）
+            if attention_mask is not None:
+                mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+                sum_hidden = torch.sum(hidden_state * mask_expanded, dim=1)
+                sum_mask = torch.clamp(mask_expanded.sum(dim=1), min=1e-9)
+                pooled_output = sum_hidden / sum_mask  # (bs, dim)
+            else:
+                pooled_output = torch.mean(hidden_state, dim=1)  # (bs, dim)
+        elif self.pooling_strategy == "max":
+            # Max Pooling: 对所有 token 的向量取最大值（考虑 attention_mask）
+            if attention_mask is not None:
+                mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+                hidden_state[mask_expanded == 0] = -1e9  # 将 padding 位置设为极小值
+            pooled_output = torch.max(hidden_state, dim=1)[0]  # (bs, dim)
+        else:
+            raise ValueError(f"Unknown pooling_strategy: {self.pooling_strategy}")
+        
         pooled_output = self.pre_classifier(pooled_output)  # (bs, dim)
         pooled_output = nn.ReLU()(pooled_output)  # (bs, dim)
         pooled_output = self.dropout(pooled_output)  # (bs, dim)

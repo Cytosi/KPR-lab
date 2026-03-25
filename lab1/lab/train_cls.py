@@ -1,4 +1,5 @@
 import os
+import argparse
 os.environ["HF_DATASETS_OFFLINE"] = "0"
 os.environ["HF_HUB_OFFLINE"] = "0"
 
@@ -8,7 +9,13 @@ from transformers import TrainingArguments, Trainer, DataCollatorWithPadding
 from datasets import load_dataset, DownloadMode
 import numpy as np
 
-print("导入完成...")
+# 命令行参数
+parser = argparse.ArgumentParser()
+parser.add_argument("--pooling", type=str, default="cls", choices=["cls", "mean", "max"],
+                    help="池化策略: cls, mean, max")
+args = parser.parse_args()
+
+print(f"导入完成... 使用池化策略: {args.pooling}")
 
 id2label = {0: "NEGATIVE", 1: "POSITIVE"}
 label2id = {"NEGATIVE": 0, "POSITIVE": 1}
@@ -16,7 +23,8 @@ label2id = {"NEGATIVE": 0, "POSITIVE": 1}
 ############模型定义
 tokenizer = AutoTokenizer.from_pretrained("./cache/distilbert")
 model = DistilBertForSequenceClassification.from_pretrained(
-    "./cache/distilbert", num_labels=2, id2label=id2label, label2id=label2id
+    "./cache/distilbert", num_labels=2, id2label=id2label, label2id=label2id,
+    pooling_strategy=args.pooling  # 传入池化策略
 )
 
 ###########数据集准备
@@ -44,12 +52,16 @@ def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
     accuracy = (predictions == labels).mean()
+    print("\n"*3)
+    print("metrics:")
     print(f"\nAccuracy: {accuracy:.4f}\n")
+    print("\n"*3)
     return {"accuracy": accuracy}
+    
 
 ###########训练参数
 training_args = TrainingArguments(
-    output_dir="./ckpt/CLS_ckpt",
+    output_dir=f"./ckpt/CLS_ckpt_{args.pooling}",  # 不同池化策略保存到不同目录
     learning_rate=5e-5,
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
@@ -75,3 +87,8 @@ trainer = Trainer(
 )
 
 trainer.train()
+
+
+print("\n" + "="*50)
+print(f"池化策略: {args.pooling}")
+print("="*50)
