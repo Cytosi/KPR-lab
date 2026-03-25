@@ -1,0 +1,6 @@
+*.pt
+*.pth
+*.model
+lab1/lab/cache/
+lab1/lab/ckpt/
+lab1/lab/_pycache_/
