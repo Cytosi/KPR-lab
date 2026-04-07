@@ -1,0 +1,32 @@
+# Word2Vec环境核心依赖
+# 使用方法: pip install -r word2vec_requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# PyTorch
+torch
+torchvision
+
+# NLP相关
+gensim
+jieba
+transformers
+datasets
+tokenizers
+accelerate
+huggingface_hub
+
+# 数据科学
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+seaborn
+
+# 工具
+tqdm
+pyyaml
+requests
+safetensors
+
+# GPU监控
+nvitop
