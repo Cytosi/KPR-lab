@@ -1,12 +1,3 @@
-"""
-MNIST手写数字识别实验
-实验内容：
-1. 数据准备：加载MNIST数据集，数据预处理，展示样本
-2. 模型设计：实现基础CNN(模型A)和改进CNN(模型B)
-3. 模型训练：使用Adam优化器，交叉熵损失，记录训练曲线
-4. 模型评估：混淆矩阵，指标计算，错误样本展示
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -34,19 +25,10 @@ print(f"使用设备: {device}")
 os.makedirs('outputs', exist_ok=True)
 
 
-# ==================== 一、数据准备 ====================
+
 
 def compute_dataset_statistics():
-    """
-    (1) 计算MNIST训练集的数据分布：均值和方差
-    """
-    print("\n" + "="*60)
-    print("一、数据准备")
-    print("="*60)
-    print("\n(1) 计算MNIST训练集的数据分布")
-    print("-" * 40)
-    
-    # 加载原始数据（不进行归一化）
+    # 加载原始数据
     raw_transform = transforms.ToTensor()
     raw_dataset = datasets.MNIST(root='./data', train=True, download=False, transform=raw_transform)
     
@@ -61,24 +43,11 @@ def compute_dataset_statistics():
     var = np.var(all_pixels)
     
     print(f"训练集样本数: {len(raw_dataset)}")
-    print(f"图像尺寸: 28 x 28 x 1 (灰度图)")
-    print(f"像素值范围: [0, 1] (ToTensor自动归一化)")
     print()
     print(f">>> 均值 (Mean): {mean:.6f}")
     print(f">>> 方差 (Variance): {var:.6f}")
     print(f">>> 标准差 (Std): {std:.6f}")
-    print()
-    print("代码片段:")
-    print("```python")
-    print("# 计算MNIST训练集的均值和方差")
-    print("raw_transform = transforms.ToTensor()")
-    print("raw_dataset = datasets.MNIST(root='./data', train=True, transform=raw_transform)")
-    print("all_pixels = np.concatenate([img.numpy().flatten() for img, _ in raw_dataset])")
-    print("mean = np.mean(all_pixels)  # 均值")
-    print("std = np.std(all_pixels)    # 标准差")
-    print("var = np.var(all_pixels)    # 方差")
-    print("```")
-    
+    print()  
     return mean, std
 
 
@@ -103,13 +72,7 @@ def get_data_loaders(batch_size=64):
     return train_loader, test_loader, train_dataset, test_dataset
 
 
-def show_samples(dataset, samples_per_class=5):
-    """
-    (2) 展示处理后的样本（每个类别随机展示至少5个样本）
-    """
-    print("\n(2) 展示处理后的图像样本")
-    print("-" * 40)
-    
+def show_samples(dataset, samples_per_class=5): 
     fig, axes = plt.subplots(10, samples_per_class, figsize=(samples_per_class*2, 20))
     fig.suptitle('MNIST Normalized Samples (5 samples per class)', fontsize=16, fontweight='bold')
     
@@ -141,41 +104,15 @@ def show_samples(dataset, samples_per_class=5):
     print("样本展示图已保存: outputs/1_sample_display.png")
 
 
-# ==================== 二、模型设计 ====================
+
 
 class ModelA(nn.Module):
-    """
-    模型A - 基础CNN
-    
-    架构说明:
-    - 2个卷积层 (Conv2d)
-    - 最大池化层 (MaxPool2d)
-    - 2个全连接层 (Linear)
-    - ReLU激活函数
-    
-    Conv2d参数含义:
-    - in_channels: 输入通道数 (灰度图为1, RGB为3)
-    - out_channels: 输出通道数/卷积核数量
-    - kernel_size: 卷积核大小
-    - padding: 填充大小, 保持特征图尺寸
-    """
     def __init__(self):
         super(ModelA, self).__init__()
-        # Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
-        # 输入: 1通道(灰度图), 输出: 32个特征图, 3x3卷积核, padding=1保持尺寸
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
-        
-        # Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        # 输入: 32通道, 输出: 64个特征图
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        
-        # MaxPool2d: 2x2池化, 步长2, 特征图尺寸减半
         self.pool = nn.MaxPool2d(2, 2)
-        
-        # 全连接层1: 64*7*7 -> 128
         self.fc1 = nn.Linear(64 * 7 * 7, 128)
-        
-        # 全连接层2(输出层): 128 -> 10 (10个类别)
         self.fc2 = nn.Linear(128, 10)
     
     def forward(self, x):
@@ -189,26 +126,6 @@ class ModelA(nn.Module):
 
 
 class ModelB(nn.Module):
-    """
-    模型B - 改进CNN
-    
-    优化架构:
-    1. 增加网络深度: 4个卷积层 (对比模型A的2个)
-    2. BatchNorm层: 批量归一化, 加速训练, 提高稳定性
-    3. Dropout: 随机丢弃神经元, 防止过拟合
-    4. 全局平均池化: 替代全连接层, 减少参数量
-    5. Leaky ReLU: 解决ReLU的"死亡神经元"问题
-    
-    BatchNorm作用:
-    - 对每个batch的数据进行归一化
-    - 加速收敛, 允许使用更大学习率
-    - 有轻微正则化效果
-    
-    Dropout作用:
-    - 训练时随机丢弃部分神经元
-    - 减少神经元之间的共适应
-    - 有效防止过拟合
-    """
     def __init__(self, dropout_rate=0.25):
         super(ModelB, self).__init__()
         
@@ -265,74 +182,21 @@ class ModelB(nn.Module):
 
 
 def print_model_architecture():
-    """(1)(2) 打印模型架构和参数量"""
-    print("\n" + "="*60)
-    print("二、模型设计")
-    print("="*60)
-    
     model_a = ModelA()
     model_b = ModelB()
     
-    # 模型A
-    print("\n(1) 模型A架构 - 基础CNN")
-    print("-" * 40)
+
     print(model_a)
-    
-    params_a = sum(p.numel() for p in model_a.parameters())
-    print(f"\n>>> 模型A总参数量: {params_a:,}")
-    
-    print("\n参数量计算:")
-    print("  conv1: 1×32×3×3 + 32 = 320")
-    print("  conv2: 32×64×3×3 + 64 = 18,496")
-    print("  fc1: 64×7×7×128 + 128 = 401,536")
-    print("  fc2: 128×10 + 10 = 1,290")
-    print(f"  总计: {params_a:,}")
-    
-    print("\nConv2d参数含义:")
-    print("  - in_channels: 输入通道数 (1=灰度图)")
-    print("  - out_channels: 输出通道数/卷积核数量")
-    print("  - kernel_size: 卷积核大小 (3表示3×3)")
-    print("  - padding: 边缘填充 (1保持特征图尺寸)")
-    
-    # 模型B
-    print("\n" + "-" * 40)
-    print("(2) 模型B架构 - 改进CNN")
-    print("-" * 40)
     print(model_b)
-    
+    params_a = sum(p.numel() for p in model_a.parameters())
+    print(f"\n>>> 模型A总参数量: {params_a:,}")       
     params_b = sum(p.numel() for p in model_b.parameters())
     print(f"\n>>> 模型B总参数量: {params_b:,}")
-    
-    print("\n模型B优化点:")
-    print("  1. 4个卷积层 (增加深度)")
-    print("  2. BatchNorm层 (加速训练)")
-    print("  3. Dropout (防止过拟合)")
-    print("  4. 全局平均池化 (减少参数)")
-    print("  5. Leaky ReLU (避免死亡神经元)")
-    
-    # (3) BatchNorm和Dropout解释
-    print("\n" + "-" * 40)
-    print("(3) BatchNorm和Dropout的作用")
-    print("-" * 40)
-    print("\nBatchNorm (批量归一化):")
-    print("  - 对每个mini-batch的特征进行归一化")
-    print("  - 使得每层输入分布稳定")
-    print("  - 加速模型收敛, 可使用更大学习率")
-    print("  - 有轻微正则化效果")
-    
-    print("\nDropout (随机丢弃):")
-    print("  - 训练时以概率p随机将神经元输出置0")
-    print("  - 减少神经元间的共适应性")
-    print("  - 等效于训练多个子网络的集成")
-    print("  - 有效防止过拟合")
-    
     return params_a, params_b
 
 
-# ==================== 三、模型训练 ====================
 
 def train_model(model, train_loader, test_loader, epochs=10, lr=0.001, model_name='Model'):
-    """训练模型并记录详细指标"""
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -423,17 +287,7 @@ def evaluate_accuracy(model, data_loader):
 
 
 def plot_training_curves_separate(results_a, results_b):
-    """
-    (1)(2) 分别绘制模型A和模型B的训练曲线
-    """
-    print("\n" + "="*60)
-    print("三、模型训练")
-    print("="*60)
-    
-    # 模型A曲线
-    print("\n(1) 模型A训练曲线")
-    print("-" * 40)
-    
+
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle('Model A Training Curves', fontsize=14, fontweight='bold')
     
@@ -458,10 +312,6 @@ def plot_training_curves_separate(results_a, results_b):
     for i, t in enumerate(results_a['epoch_times']):
         print(f"  Epoch {i+1}: {t:.2f}s")
     print(f"  总训练时间: {sum(results_a['epoch_times']):.2f}s")
-    
-    # 模型B曲线
-    print("\n(2) 模型B训练曲线")
-    print("-" * 40)
     
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle('Model B Training Curves', fontsize=14, fontweight='bold')
@@ -513,29 +363,8 @@ def plot_training_curves_separate(results_a, results_b):
     plt.close()
     print("\n对比曲线已保存: outputs/3_comparison_curves.png")
     
-    # (3) 解释准确率和损失曲线不完全正比
-    print("\n(3) 准确率曲线和损失曲线为什么不完全正比?")
-    print("-" * 40)
-    print("""
-原因分析:
-1. 损失函数的非线性: 交叉熵损失是概率的对数, 当模型越来越自信
-   (预测概率接近1), 损失下降速度会变慢, 但准确率可能已经很高
-
-2. 阈值效应: 准确率是离散的(预测对或错), 而损失是连续的
-   - 例如: 将预测概率从0.6提升到0.9, 准确率不变(都算对)
-   - 但损失会显著下降
-
-3. 边界样本: 模型可能在某些"难样本"上反复调整
-   - 准确率在0.5附近波动
-   - 损失持续下降(概率在改善)
-
-4. 过拟合影响: 模型可能开始记忆训练样本
-   - 训练准确率继续上升
-   - 但对某些样本过度自信, 错误样本的损失增加
-""")
 
 
-# ==================== 四、模型评估 ====================
 
 def get_predictions(model, data_loader):
     """获取模型预测结果"""
@@ -628,11 +457,6 @@ def evaluate_model(model, test_loader, model_name, results):
 
 
 def analyze_models(metrics_a, metrics_b, results_a, results_b):
-    """(3)(4) 分析模型训练效率和过拟合"""
-    print("\n(3) 训练效率分析")
-    print("-" * 40)
-    
-    # 计算相同时间内的准确率提升
     time_a = sum(results_a['epoch_times'])
     time_b = sum(results_b['epoch_times'])
     
@@ -657,8 +481,6 @@ def analyze_models(metrics_a, metrics_b, results_a, results_b):
     else:
         print(f"\n>>> 结论: 模型B训练效率更高 ({efficiency_b:.4f} > {efficiency_a:.4f})")
     
-    print("\n(4) 过拟合分析")
-    print("-" * 40)
     
     # 计算训练集和测试集准确率差异
     gap_a = results_a['epoch_train_accs'][-1] - results_a['epoch_test_accs'][-1]
@@ -710,22 +532,15 @@ def analyze_models(metrics_a, metrics_b, results_a, results_b):
     print("\n过拟合分析图已保存: outputs/4_overfitting_analysis.png")
 
 
-# ==================== 主程序 ====================
 
 def main():
-    print("="*60)
-    print("MNIST手写数字识别实验报告")
-    print("="*60)
     
-    # 一、数据准备
     mean, std = compute_dataset_statistics()
     train_loader, test_loader, train_dataset, test_dataset = get_data_loaders(batch_size=64)
     show_samples(train_dataset, samples_per_class=5)
     
-    # 二、模型设计
     params_a, params_b = print_model_architecture()
     
-    # 三、模型训练
     model_a = ModelA()
     model_b = ModelB(dropout_rate=0.25)
     
@@ -734,25 +549,14 @@ def main():
     
     plot_training_curves_separate(results_a, results_b)
     
-    # 四、模型评估
-    print("\n" + "="*60)
-    print("四、模型评估")
-    print("="*60)
-    
-    print("\n(1) 模型A评估")
     print("-" * 40)
     metrics_a = evaluate_model(results_a['model'], test_loader, 'Model A', results_a)
     
-    print("\n(2) 模型B评估")
     print("-" * 40)
     metrics_b = evaluate_model(results_b['model'], test_loader, 'Model B', results_b)
     
     analyze_models(metrics_a, metrics_b, results_a, results_b)
     
-    # 结果总结
-    print("\n" + "="*60)
-    print("实验结果总结")
-    print("="*60)
     print(f"\nModel A (Basic CNN):")
     print(f"  - 参数量: {params_a:,}")
     print(f"  - 测试集准确率: {metrics_a['accuracy']*100:.2f}%")
@@ -765,17 +569,6 @@ def main():
         print(f"\n✓ Model B 达到99%以上准确率要求!")
     else:
         print(f"\n✗ Model B 未达到99%准确率要求，当前: {metrics_b['accuracy']*100:.2f}%")
-    
-    print("\n生成的输出文件:")
-    print("  [一] outputs/1_sample_display.png - 样本展示")
-    print("  [三] outputs/3_model_a_curves.png - 模型A训练曲线")
-    print("  [三] outputs/3_model_b_curves.png - 模型B训练曲线")
-    print("  [三] outputs/3_comparison_curves.png - 对比曲线")
-    print("  [四] outputs/4_model_a_confusion.png - 模型A混淆矩阵")
-    print("  [四] outputs/4_model_b_confusion.png - 模型B混淆矩阵")
-    print("  [四] outputs/4_model_a_errors.png - 模型A错误样本")
-    print("  [四] outputs/4_model_b_errors.png - 模型B错误样本")
-    print("  [四] outputs/4_overfitting_analysis.png - 过拟合分析")
     
     # 保存模型
     torch.save(results_a['model'].state_dict(), 'outputs/model_a.pth')
