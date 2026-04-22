@@ -1,0 +1,111 @@
+{
+  "model": "bert-bilstm-crf",
+  "device": "cuda",
+  "checkpoint": "/home/zzm/LAB/lab4/src/checkpoint/duie/pytorch_model_ner.bin",
+  "results": [
+    {
+      "text": "《民航客运服务会话》是1995年中国民航出版社出版的图书，作者是周石田",
+      "entities": [
+        {
+          "text": "民航客运服务会话",
+          "type": "图书作品",
+          "start": 1,
+          "end": 9
+        },
+        {
+          "text": "周石田",
+          "type": "人物",
+          "start": 32,
+          "end": 35
+        }
+      ]
+    },
+    {
+      "text": "再有之后的《半生缘》，蒋勤勤饰演的顾曼璐完全把林心如的曼桢衬得像是涉世未深的小姑娘，毫无半点风情",
+      "entities": [
+        {
+          "text": "半生缘",
+          "type": "影视作品",
+          "start": 6,
+          "end": 9
+        },
+        {
+          "text": "蒋勤勤",
+          "type": "人物",
+          "start": 11,
+          "end": 14
+        },
+        {
+          "text": "顾曼璐",
+          "type": "人物",
+          "start": 17,
+          "end": 20
+        },
+        {
+          "text": "林心如",
+          "type": "人物",
+          "start": 23,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "text": "裴友生，男，汉族，湖北蕲春人，1957年12月出生，大专学历",
+      "entities": [
+        {
+          "text": "裴友生",
+          "type": "人物",
+          "start": 0,
+          "end": 3
+        }
+      ]
+    },
+    {
+      "text": "吴君如演的周吉是电影《花田喜事》，在周吉大婚之夜，其夫林嘉声逃走失踪，后来其夫新科状元高中回来，周吉急往城楼相识，但林嘉声却言夫妻情断，覆水难收",
+      "entities": [
+        {
+          "text": "吴君如",
+          "type": "人物",
+          "start": 0,
+          "end": 3
+        },
+        {
+          "text": "周吉",
+          "type": "人物",
+          "start": 5,
+          "end": 7
+        },
+        {
+          "text": "花田喜事",
+          "type": "影视作品",
+          "start": 11,
+          "end": 15
+        },
+        {
+          "text": "周吉",
+          "type": "人物",
+          "start": 18,
+          "end": 20
+        },
+        {
+          "text": "林嘉声",
+          "type": "人物",
+          "start": 27,
+          "end": 30
+        },
+        {
+          "text": "周吉",
+          "type": "人物",
+          "start": 48,
+          "end": 50
+        },
+        {
+          "text": "林嘉声",
+          "type": "人物",
+          "start": 58,
+          "end": 61
+        }
+      ]
+    }
+  ]
+}

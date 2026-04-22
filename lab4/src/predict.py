@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 import torch
 from transformers import BertTokenizer
@@ -81,6 +82,8 @@ def main():
     args = NerConfig("duie")
     tokenizer = BertTokenizer.from_pretrained(args.bert_dir)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    output_dir = Path(os.path.dirname(os.path.abspath(__file__))) / "outputs"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     model = BertNer(args)
     model.load_state_dict(
@@ -97,7 +100,17 @@ def main():
         entities = predict_single(text, model, tokenizer, args, device)
         results.append({"text": text, "entities": entities})
 
-    print(json.dumps(results, ensure_ascii=False, indent=2))
+    output_file = output_dir / "bert_predict_results.json"
+    summary = {
+        "model": "bert-bilstm-crf",
+        "device": str(device),
+        "checkpoint": os.path.join(args.output_dir, "pytorch_model_ner.bin"),
+        "results": results,
+    }
+    with open(output_file, "w", encoding="utf-8") as file:
+        json.dump(summary, file, ensure_ascii=False, indent=2)
+
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
