@@ -1,7 +1,13 @@
 *.pt
 *.pth
 *.model
+*.bin
 lab1/lab/cache/
 lab1/lab/ckpt/
 lab1/lab/_pycache_/
 lab2/data/MNIST
+lab4/src/model_hub
+lab4/src/ltp_small
+lab4/src/checkpoint
+lab4/src/data
+lab4/src/duie_data

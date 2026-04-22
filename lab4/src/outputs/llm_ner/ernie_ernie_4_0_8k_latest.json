@@ -1,0 +1,173 @@
+[
+  {
+    "model": "ernie-4.0-8k-latest",
+    "text": "《民航客运服务会话》是1995年中国民航出版社出版的图书，作者是周石田",
+    "entities": [
+      {
+        "entity": "《民航客运服务会话》",
+        "type": "图书作品",
+        "start": 0,
+        "end": 10,
+        "reason": "书名号括起来的文本，属于图书作品"
+      },
+      {
+        "entity": "1995年",
+        "type": "时间",
+        "start": 11,
+        "end": 16,
+        "reason": "包含年份的文本，属于时间"
+      },
+      {
+        "entity": "中国民航出版社",
+        "type": "组织机构",
+        "start": 17,
+        "end": 24,
+        "reason": "出版相关机构名称，属于组织机构"
+      },
+      {
+        "entity": "周石田",
+        "type": "人物",
+        "start": 28,
+        "end": 31,
+        "reason": "书的作者，属于人物"
+      }
+    ]
+  },
+  {
+    "model": "ernie-4.0-8k-latest",
+    "text": "再有之后的《半生缘》，蒋勤勤饰演的顾曼璐完全把林心如的曼桢衬得像是涉世未深的小姑娘，毫无半点风情",
+    "entities": [
+      {
+        "entity": "《半生缘》",
+        "type": "图书作品",
+        "start": 4,
+        "end": 9,
+        "reason": "书名号括起来的作品名称"
+      },
+      {
+        "entity": "蒋勤勤",
+        "type": "人物",
+        "start": 10,
+        "end": 13,
+        "reason": "常见人名"
+      },
+      {
+        "entity": "顾曼璐",
+        "type": "人物",
+        "start": 15,
+        "end": 18,
+        "reason": "常见人名"
+      },
+      {
+        "entity": "林心如",
+        "type": "人物",
+        "start": 22,
+        "end": 25,
+        "reason": "常见人名"
+      },
+      {
+        "entity": "曼桢",
+        "type": "人物",
+        "start": 26,
+        "end": 28,
+        "reason": "常见人名"
+      }
+    ]
+  },
+  {
+    "model": "ernie-4.0-8k-latest",
+    "text": "裴友生，男，汉族，湖北蕲春人，1957年12月出生，大专学历",
+    "entities": [
+      {
+        "entity": "裴友生",
+        "type": "人物",
+        "start": 0,
+        "end": 3,
+        "reason": "这是一个人名"
+      },
+      {
+        "entity": "汉族",
+        "type": "民族",
+        "start": 6,
+        "end": 8,
+        "reason": "这是民族名称"
+      },
+      {
+        "entity": "湖北蕲春",
+        "type": "地名",
+        "start": 9,
+        "end": 13,
+        "reason": "这是具体地名"
+      },
+      {
+        "entity": "1957年12月",
+        "type": "时间",
+        "start": 14,
+        "end": 21,
+        "reason": "这是具体时间"
+      },
+      {
+        "entity": "大专",
+        "type": "学历",
+        "start": 24,
+        "end": 26,
+        "reason": "这是学历名称"
+      }
+    ]
+  },
+  {
+    "model": "ernie-4.0-8k-latest",
+    "text": "吴君如演的周吉是电影《花田喜事》，在周吉大婚之夜，其夫林嘉声逃走失踪，后来其夫新科状元高中回来，周吉急往城楼相识，但林嘉声却言夫妻情断，覆水难收",
+    "entities": [
+      {
+        "entity": "吴君如",
+        "type": "人物",
+        "start": 0,
+        "end": 3,
+        "reason": "人名，属于人物实体"
+      },
+      {
+        "entity": "周吉",
+        "type": "人物",
+        "start": 4,
+        "end": 6,
+        "reason": "人名，属于人物实体"
+      },
+      {
+        "entity": "《花田喜事》",
+        "type": "影视作品",
+        "start": 9,
+        "end": 15,
+        "reason": "电影名称，属于影视作品实体"
+      },
+      {
+        "entity": "林嘉声",
+        "type": "人物",
+        "start": 20,
+        "end": 23,
+        "reason": "人名，属于人物实体"
+      },
+      {
+        "entity": "林嘉声",
+        "type": "人物",
+        "start": 40,
+        "end": 43,
+        "reason": "人名，属于人物实体"
+      },
+      {
+        "entity": "周吉",
+        "type": "人物",
+        "start": 49,
+        "end": 51,
+        "reason": "人名，属于人物实体"
+      },
+      {
+        "entity": "林嘉声",
+        "type": "人物",
+        "start": 57,
+        "end": 60,
+        "reason": "人名，属于人物实体"
+      }
+    ]
+  }
+]
